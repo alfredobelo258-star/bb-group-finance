@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: bb-group-finance-v2
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
