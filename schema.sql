@@ -1,0 +1,31 @@
+CREATE TABLE IF NOT EXISTS users (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(80) UNIQUE NOT NULL,
+ password_hash TEXT NOT NULL,
+ investment_limit NUMERIC(14,2) NOT NULL DEFAULT 0,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS movements (
+ id SERIAL PRIMARY KEY,
+ user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ type VARCHAR(20) NOT NULL CHECK (type IN ('income','expense','investment')),
+ amount NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+ description TEXT NOT NULL,
+ commission NUMERIC(14,2) NOT NULL DEFAULT 0,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS debts (
+ id SERIAL PRIMARY KEY,
+ user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ amount NUMERIC(14,2) NOT NULL CHECK (amount >= 0),
+ description TEXT NOT NULL,
+ status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','paid')),
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+ paid_at TIMESTAMPTZ
+);
+CREATE TABLE IF NOT EXISTS weekly_goals (
+ id SERIAL PRIMARY KEY,
+ amount NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+ week_start DATE NOT NULL UNIQUE,
+ created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

@@ -1,0 +1,27 @@
+const express=require('express');
+const path=require('path');
+const bcrypt=require('bcryptjs');
+const jwt=require('jsonwebtoken');
+const cookieParser=require('cookie-parser');
+const {Pool}=require('pg');
+require('dotenv').config?.();
+const app=express();
+app.use(express.json()); app.use(cookieParser());
+const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.NODE_ENV==='production'?{rejectUnauthorized:false}:false});
+const secret=process.env.JWT_SECRET||'dev-only-change-me';
+function auth(req,res,next){try{const t=req.cookies.bb_token;if(!t) return res.status(401).json({error:'Não autenticado'});req.user=jwt.verify(t,secret);next()}catch(e){res.status(401).json({error:'Sessão inválida'})}}
+function weekStart(){const d=new Date(); const day=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-day); return d.toISOString().slice(0,10)}
+app.get('/health',(req,res)=>res.json({ok:true,app:'B&B Group Finance'}));
+app.post('/api/setup',async(req,res)=>{try{const {setupKey}=req.body;if(setupKey!==process.env.SETUP_KEY) return res.status(403).json({error:'SETUP_KEY inválida'});const c=await pool.query('SELECT COUNT(*)::int n FROM users');if(c.rows[0].n>0)return res.status(409).json({error:'Já configurado'});for(const [name,pw,limit] of [['Belo','1234',20000],['Backson','1234',10000]]){const h=await bcrypt.hash(pw,12);await pool.query('INSERT INTO users(name,password_hash,investment_limit) VALUES($1,$2,$3)',[name,h,limit])}res.json({ok:true,message:'Utilizadores criados. Altere as palavras-passe.'})}catch(e){res.status(500).json({error:e.message})}});
+app.post('/api/login',async(req,res)=>{const {name,password}=req.body;const r=await pool.query('SELECT * FROM users WHERE LOWER(name)=LOWER($1)',[name||'']);const u=r.rows[0];if(!u||!(await bcrypt.compare(password||'',u.password_hash)))return res.status(401).json({error:'Utilizador ou palavra-passe incorretos'});res.cookie('bb_token',jwt.sign({id:u.id,name:u.name},secret,{expiresIn:'7d'}),{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:7*86400000});res.json({ok:true,name:u.name})});
+app.post('/api/logout',(req,res)=>{res.clearCookie('bb_token');res.json({ok:true})});
+app.get('/api/me',auth,async(req,res)=>{const r=await pool.query('SELECT id,name,investment_limit FROM users WHERE id=$1',[req.user.id]);res.json(r.rows[0])});
+app.get('/api/dashboard',auth,async(req,res)=>{const [u,m,d,g]=await Promise.all([pool.query('SELECT id,name,investment_limit FROM users ORDER BY id'),pool.query('SELECT m.*,u.name user_name FROM movements m JOIN users u ON u.id=m.user_id ORDER BY m.created_at DESC LIMIT 100'),pool.query("SELECT d.*,u.name user_name FROM debts d JOIN users u ON u.id=d.user_id WHERE d.status='pending' ORDER BY d.created_at DESC"),pool.query('SELECT amount FROM weekly_goals WHERE week_start=$1',[weekStart()])]);let income=0,expense=0,invest=0;for(const x of m.rows){const a=Number(x.amount);if(x.type==='income')income+=a;if(x.type==='expense')expense+=a;if(x.type==='investment')invest+=a}res.json({users:u.rows,movements:m.rows,debts:d.rows,goal:Number(g.rows[0]?.amount||10000),summary:{income,expense,invest,balance:income+invest-expense}})});
+app.post('/api/movements',auth,async(req,res)=>{const {type,amount,description,commission}=req.body;if(!['income','expense','investment'].includes(type)||!amount||!description)return res.status(400).json({error:'Tipo, valor e descrição são obrigatórios'});if(type==='investment'){const u=await pool.query('SELECT investment_limit FROM users WHERE id=$1',[req.user.id]);const total=await pool.query("SELECT COALESCE(SUM(amount),0) s FROM movements WHERE user_id=$1 AND type='investment'",[req.user.id]);if(Number(total.rows[0].s)+Number(amount)>Number(u.rows[0].investment_limit))return res.status(400).json({error:'Limite de investimento excedido'});}const r=await pool.query('INSERT INTO movements(user_id,type,amount,description,commission) VALUES($1,$2,$3,$4,$5) RETURNING *',[req.user.id,type,amount,description,commission||0]);res.json(r.rows[0])});
+app.post('/api/debts',auth,async(req,res)=>{const {userId,amount,description}=req.body;if(!userId||!amount||!description)return res.status(400).json({error:'Investidor, valor e descrição são obrigatórios'});const r=await pool.query("INSERT INTO debts(user_id,amount,description) VALUES($1,$2,$3) RETURNING *",[userId,amount,description]);res.json(r.rows[0])});
+app.patch('/api/debts/:id/pay',auth,async(req,res)=>{const r=await pool.query("UPDATE debts SET status='paid',paid_at=NOW() WHERE id=$1 RETURNING *",[req.params.id]);res.json(r.rows[0]||null)});
+app.post('/api/goal',auth,async(req,res)=>{const {amount}=req.body;if(!amount)return res.status(400).json({error:'Valor obrigatório'});const r=await pool.query("INSERT INTO weekly_goals(amount,week_start) VALUES($1,$2) ON CONFLICT(week_start) DO UPDATE SET amount=EXCLUDED.amount RETURNING *",[amount,weekStart()]);res.json(r.rows[0])});
+app.patch('/api/users/:id/limit',auth,async(req,res)=>{if(Number(req.params.id)!==Number(req.user.id))return res.status(403).json({error:'Cada investidor altera apenas o seu limite'});const {limit}=req.body;const r=await pool.query('UPDATE users SET investment_limit=$1 WHERE id=$2 RETURNING id,name,investment_limit',[limit,req.user.id]);res.json(r.rows[0])});
+app.use(express.static(path.join(__dirname)));
+app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'index.html')));
+const port=process.env.PORT||3000;app.listen(port,()=>console.log(`B&B Group Finance running on ${port}`));

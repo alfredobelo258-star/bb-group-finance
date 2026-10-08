@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<title>B&B Group Finance</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#070707;color:#f5f5f5}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:1050px;margin:auto;padding:16px}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card{width:min(430px,100%);background:#111;border:1px solid #292929;border-radius:22px;padding:24px;text-align:center;box-shadow:0 15px 45px #0008}.logo{width:180px;height:180px;object-fit:cover;border-radius:18px;background:#000}.gold{color:#d8ae49}.muted{color:#aaa;font-size:13px}.field{display:flex;flex-direction:column;gap:7px;text-align:left;margin:12px 0}.field input,.field select,.field textarea{background:#191919;border:1px solid #333;color:#fff;border-radius:12px;padding:13px;outline:none}.btn{border:0;border-radius:12px;padding:13px 16px;background:#d8ae49;color:#111;font-weight:800}.btn.secondary{background:#242424;color:#fff}.btn.danger{background:#7d2525;color:#fff}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 0 18px}.brand{display:flex;gap:12px;align-items:center}.brand img{width:48px;height:48px;border-radius:10px;object-fit:cover}.brand b{font-size:18px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{background:#111;border:1px solid #292929;border-radius:16px;padding:16px}.stat{font-size:24px;font-weight:900;margin-top:7px}.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 14px}.tab{white-space:nowrap;background:#171717;color:#ccc;border:1px solid #2c2c2c;padding:11px 14px;border-radius:999px}.tab.active{background:#d8ae49;color:#111}.section{margin:12px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.progress{height:12px;background:#292929;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:#d8ae49}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #252525}.pill{padding:5px 9px;border-radius:999px;background:#222;font-size:12px}.positive{color:#76d48b}.negative{color:#ff8585}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}.modal-card{width:min(520px,100%);max-height:90vh;overflow:auto;background:#111;border:1px solid #333;border-radius:18px;padding:18px}.actions{display:flex;gap:8px;flex-wrap:wrap}.ai{border-left:4px solid #d8ae49;background:#17130a}.small{font-size:12px}.hidden{display:none!important}@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.two,.three{grid-template-columns:1fr}.wrap{padding:12px}.stat{font-size:20px}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="login-card">
+    <img src="logo.jpg" class="logo" alt="Logo B&B Group">
+    <h1>B&B Group <span class="gold">✦</span></h1>
+    <p class="muted">Painel privado dos dois investidores</p>
+    <div class="field"><label>Investidor</label><select id="loginUser"><option>Belo</option><option>Backson</option></select></div>
+    <div class="field"><label>Palavra-passe</label><input id="loginPass" type="password" placeholder="Palavra-passe"></div>
+    <button class="btn" style="width:100%" id="loginBtn">Entrar</button>
+    <p class="muted">V1 local • dados guardados neste dispositivo</p>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><img src="logo.jpg" alt=""><div><b>B&B Group</b><div class="muted">Finance • <span id="who"></span></div></div></div>
+    <button class="btn secondary" id="logout">Sair</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="dash">Painel</button>
+    <button class="tab" data-tab="moves">Movimentos</button>
+    <button class="tab" data-tab="invest">Investidores</button>
+    <button class="tab" data-tab="debts">Dívidas</button>
+    <button class="tab" data-tab="goals">Meta semanal</button>
+    <button class="tab" data-tab="ai">IA / Conselhos</button>
+  </div>
+
+  <main id="dash" class="page">
+    <div class="grid">
+      <div class="card"><div class="muted">Saldo</div><div class="stat" id="balance">0 MT</div></div>
+      <div class="card"><div class="muted">Total investido</div><div class="stat" id="invested">0 MT</div></div>
+      <div class="card"><div class="muted">Receitas</div><div class="stat positive" id="income">0 MT</div></div>
+      <div class="card"><div class="muted">Despesas</div><div class="stat negative" id="expense">0 MT</div></div>
+    </div>
+    <div class="two section">
+      <div class="card">
+        <h3>🎯 Meta semanal</h3>
+        <div class="stat" id="goalPct">0%</div>
+        <div class="progress"><i id="goalBar" style="width:0%"></i></div>
+        <p class="muted" id="goalText">0 / 0 MT</p>
+      </div>
+      <div class="card ai">
+        <h3>🤖 B&B Assistant</h3>
+        <p id="aiDash">A analisar o negócio...</p>
+      </div>
+    </div>
+    <div class="card section">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>📜 Atividade recente</h3><button class="btn" id="addQuick">+ Registar</button></div>
+      <div id="recent"></div>
+    </div>
+  </main>
+
+  <main id="moves" class="page hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>Movimentos</h2><button class="btn" id="addMove">+ Novo movimento</button></div>
+      <div id="movesList"></div>
+    </div>
+  </main>
+
+  <main id="invest" class="page hidden">
+    <div class="three">
+      <div class="card"><h3>👤 Belo</h3><p>Investido: <b id="beloInv">0 MT</b></p><p>Limite: <b id="beloLimit">0 MT</b></p><p>Disponível: <b id="beloAvail">0 MT</b></p></div>
+      <div class="card"><h3>👤 Backson</h3><p>Investido: <b id="backInv">0 MT</b></p><p>Limite: <b id="backLimit">0 MT</b></p><p>Disponível: <b id="backAvail">0 MT</b></p></div>
+      <div class="card"><h3>⚙️ Configuração</h3><button class="btn" id="settings">Limites / meta / palavras-passe</button></div>
+    </div>
+  </main>
+
+  <main id="debts" class="page hidden">
+    <div class="card">
+      <h2>🔴 Dívidas dos investidores</h2>
+      <button class="btn" id="addDebt">+ Registar dívida</button>
+      <div id="debtList"></div>
+    </div>
+  </main>
+
+  <main id="goals" class="page hidden">
+    <div class="card">
+      <h2>🎯 Meta semanal</h2>
+      <p class="muted">Apenas uma meta por semana. Não existem metas diárias.</p>
+      <div class="stat" id="goalBig">0 / 0 MT</div><div class="progress"><i id="goalBar2" style="width:0%"></i></div>
+      <p id="goalAdvice"></p>
+    </div>
+  </main>
+
+  <main id="ai" class="page hidden">
+    <div class="card ai">
+      <h2>🤖 B&B Assistant</h2>
+      <p>Assistente financeiro baseado nos dados registados no sistema.</p>
+      <div id="aiFull"></div>
+    </div>
+  </main>
+</div>
+</div>
+
+<div id="modal" class="modal"><div class="modal-card"><div id="modalBody"></div></div></div>
+
+<script>
+let current=null, DATA=null;
+const money=n=>new Intl.NumberFormat('pt-MZ',{maximumFractionDigits:2}).format(Number(n)||0)+' MT';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const api=async(url,opt={})=>{const r=await fetch(url,{headers:{'Content-Type':'application/json',...(opt.headers||{})},...opt});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Erro no servidor');return j};
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function modal(html){document.getElementById('modalBody').innerHTML=html;document.getElementById('modal').classList.add('show')}
+function assistant(){if(!DATA)return [];const t=DATA.summary,msg=[];if(DATA.debts.length)msg.push('⚠️ Existem dívidas pendentes. Revejam os prazos antes de assumir novas despesas.');msg.push(t.income>=DATA.goal?'🎯 A meta semanal já foi atingida. Excelente trabalho!':`🎯 Faltam ${money(DATA.goal-t.income)} para atingir a meta semanal.`);for(const u of DATA.users){const inv=DATA.movements.filter(x=>x.type==='investment'&&x.user_name===u.name).reduce((a,x)=>a+Number(x.amount),0);if(inv>=Number(u.investment_limit))msg.push(`🛑 ${u.name} atingiu o limite de investimento de ${money(u.investment_limit)}.`);else if(inv>=Number(u.investment_limit)*.8)msg.push(`⚠️ ${u.name} está perto do limite de investimento.`)}msg.push('💡 Conselho: mantenham as despesas com descrição clara e consultem o histórico antes de novos gastos.');return msg}
+function render(){if(!DATA)return;const t=DATA.summary;balance.textContent=money(t.balance);invested.textContent=money(t.invest);income.textContent=money(t.income);expense.textContent=money(t.expense);const pct=DATA.goal?Math.min(100,Math.round(t.income/DATA.goal*100)):0;goalPct.textContent=pct+'%';goalBar.style.width=pct+'%';goalText.textContent=money(t.income)+' / '+money(DATA.goal);goalBig.textContent=money(t.income)+' / '+money(DATA.goal);goalBar2.style.width=pct+'%';goalAdvice.textContent=pct>=100?'🎉 Meta semanal atingida!':`Faltam ${money(Math.max(0,DATA.goal-t.income))} para a meta semanal.`;for(const u of DATA.users){const n=DATA.movements.filter(x=>x.type==='investment'&&x.user_name===u.name).reduce((a,x)=>a+Number(x.amount),0);document.getElementById(u.name==='Belo'?'beloInv':'backInv').textContent=money(n);document.getElementById(u.name==='Belo'?'beloLimit':'backLimit').textContent=money(u.investment_limit);document.getElementById(u.name==='Belo'?'beloAvail':'backAvail').textContent=money(Math.max(0,Number(u.investment_limit)-n))}const rows=DATA.movements;const moveHTML=x=>`<div class="row"><div><b>${esc(x.type==='investment'?'Investimento':x.type==='expense'?'Despesa':'Receita')}</b><div class="muted">${esc(x.description)} • ${esc(x.user_name)} • ${new Date(x.created_at).toLocaleString('pt-MZ')}</div></div><div style="text-align:right"><b class="${x.type==='expense'?'negative':'positive'}">${x.type==='expense'?'-':'+'}${money(x.amount)}</b><br><span class="pill">${x.commission?`comissão ${money(x.commission)}`:'sem comissão'}</span></div></div>`;movesList.innerHTML=rows.length?rows.map(moveHTML).join(''):'<p class="muted">Nenhum movimento.</p>';recent.innerHTML=rows.slice(0,6).map(moveHTML).join('')||'<p class="muted">Ainda não existem movimentos.</p>';debtList.innerHTML=DATA.debts.length?DATA.debts.map(d=>`<div class="row"><div><b>${esc(d.user_name)}</b><div>${esc(d.description)}</div></div><div><b class="negative">${money(d.amount)}</b><br><button class="btn secondary" onclick="payDebt(${d.id})">Marcar paga</button></div></div>`).join(''):'<p class="muted">Sem dívidas registadas.</p>';const ai=assistant();aiDash.textContent=ai[0]||'';aiFull.innerHTML=ai.map(x=>`<p>• ${esc(x)}</p>`).join('')}
+async function refresh(){DATA=await api('/api/dashboard');render()}
+function openMove(){modal(`<h2>+ Novo movimento</h2><form id="moveForm"><div class="field"><label>Tipo</label><select id="mtype"><option value="income">Receita</option><option value="expense">Despesa</option><option value="investment">Investimento</option></select></div><div class="field"><label>Valor (MT)</label><input id="mvalue" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Descrição</label><textarea id="mdesc" required placeholder="Ex.: compra de material"></textarea></div><div class="field"><label>Comissão (opcional)</label><input id="mcomm" type="number" min="0" step="0.01"></div><div class="actions"><button class="btn">Guardar</button><button class="btn secondary" type="button" id="cancel">Cancelar</button></div></form>`);cancel.onclick=closeModal;moveForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/movements',{method:'POST',body:JSON.stringify({type:mtype.value,amount:Number(mvalue.value),description:mdesc.value.trim(),commission:Number(mcomm.value)||0})});closeModal();await refresh()}catch(err){alert(err.message)}}}
+function openDebt(){modal(`<h2>+ Registar dívida</h2><form id="debtForm"><div class="field"><label>Investidor</label><select id="duser">${DATA.users.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select></div><div class="field"><label>Valor (MT)</label><input id="dvalue" type="number" min="0.01" required></div><div class="field"><label>Descrição</label><textarea id="ddesc" required></textarea></div><div class="actions"><button class="btn">Guardar</button><button class="btn secondary" type="button" id="cancel">Cancelar</button></div></form>`);cancel.onclick=closeModal;debtForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/debts',{method:'POST',body:JSON.stringify({userId:Number(duser.value),amount:Number(dvalue.value),description:ddesc.value.trim()})});closeModal();await refresh()}catch(err){alert(err.message)}}}
+async function payDebt(id){try{await api('/api/debts/'+id+'/pay',{method:'PATCH'});await refresh()}catch(e){alert(e.message)}}
+function settings(){const me=DATA.users.find(u=>u.name===current.name);modal(`<h2>⚙️ Configuração</h2><form id="setForm"><div class="field"><label>O teu limite de investimento</label><input id="myLimit" type="number" min="0" value="${me.investment_limit}"></div><div class="field"><label>Meta semanal (MT)</label><input id="goal" type="number" min="1" value="${DATA.goal}"></div><p class="muted">Cada investidor altera apenas o seu limite. A meta semanal é partilhada.</p><div class="actions"><button class="btn">Guardar</button><button class="btn secondary" type="button" id="cancel">Cancelar</button></div></form>`);cancel.onclick=closeModal;setForm.onsubmit=async e=>{e.preventDefault();try{await api('/api/users/'+me.id+'/limit',{method:'PATCH',body:JSON.stringify({limit:Number(myLimit.value)})});await api('/api/goal',{method:'POST',body:JSON.stringify({amount:Number(goal.value)})});closeModal();await refresh()}catch(err){alert(err.message)}}}
+async function login(){try{const j=await api('/api/login',{method:'POST',body:JSON.stringify({name:loginUser.value,password:loginPass.value})});current=j;login.classList.add('hidden');app.classList.remove('hidden');who.textContent=current.name;await refresh()}catch(e){alert(e.message)}}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(b.dataset.tab).classList.remove('hidden')});
+document.getElementById('loginBtn').onclick=login;document.getElementById('logout').onclick=async()=>{await api('/api/logout',{method:'POST'});location.reload()};document.getElementById('addMove').onclick=openMove;document.getElementById('addQuick').onclick=openMove;document.getElementById('addDebt').onclick=openDebt;document.getElementById('settings').onclick=settings;
+(async()=>{try{current=await api('/api/me');login.classList.add('hidden');app.classList.remove('hidden');who.textContent=current.name;await refresh()}catch(e){}})();
+</script>
+</body>
+</html>
