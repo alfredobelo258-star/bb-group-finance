@@ -1,1 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B&B Group Finance V2</title>
 
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#080808;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+header{
+  padding:25px 15px;
+  text-align:center;
+  border-bottom:1px solid #b58b24;
+}
+
+.logo{
+  color:#d6a51e;
+  font-size:32px;
+  font-weight:bold;
+}
+
+.subtitle{
+  color:#bbb;
+  font-size:13px;
+  margin-top:8px;
+}
+
+main{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card{
+  background:#141414;
+  border:1px solid #393018;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:18px;
+}
+
+h2{color:#e5b72e}
+
+input,select,button{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  border-radius:8px;
+  border:1px solid #49402a;
+  background:#080808;
+  color:white;
+}
+
+button{
+  background:#d6a51e;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px;
+}
+
+.stat{
+  padding:17px;
+  background:#1b1b1b;
+  border-radius:10px;
+  border:1px solid #393018;
+}
+
+.stat strong{
+  display:block;
+  color:#e5b72e;
+  font-size:21px;
+  margin-top:10px;
+}
+
+.hidden{display:none}
+
+.message{color:#e5b72e}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+td,th{
+  padding:10px;
+  border-bottom:1px solid #333;
+  text-align:left;
+}
+
+.table-wrap{overflow-x:auto}
+
+footer{
+  text-align:center;
+  padding:25px 10px;
+  color:#999;
+  font-size:13px;
+  border-top:1px solid #393018;
+}
+
+footer strong{color:#d6a51e}
+
+@media(max-width:500px){
+  main{padding:12px}
+  .logo{font-size:27px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">B&B GROUP</div>
+  <div class="subtitle">
+    Onde ideias viram negócios e sonhos viram realidade
+  </div>
+  <div class="subtitle">FINANCE V2.0</div>
+</header>
+
+<main>
+
+<section id="login" class="card">
+  <h2>Acesso ao sistema</h2>
+
+  <label>Utilizador</label>
+  <input id="username" placeholder="Nome de utilizador">
+
+  <label>Palavra-passe</label>
+  <input id="password" type="password" placeholder="Palavra-passe">
+
+  <button onclick="login()">Entrar</button>
+  <p id="loginMessage" class="message"></p>
+</section>
+
+<section id="dashboard" class="hidden">
+
+  <div class="card">
+    Bem-vindo, <strong id="userName"></strong>
+    <button onclick="logout()">Terminar sessão</button>
+  </div>
+
+  <div class="grid">
+    <div class="stat">
+      Entradas
+      <strong id="entries">0 MT</strong>
+    </div>
+
+    <div class="stat">
+      Saídas
+      <strong id="expenses">0 MT</strong>
+    </div>
+
+    <div class="stat">
+      Investimentos
+      <strong id="investments">0 MT</strong>
+    </div>
+
+    <div class="stat">
+      Saldo
+      <strong id="balance">0 MT</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Registar movimento</h2>
+
+    <label>Tipo de movimento</label>
+    <select id="type">
+      <option value="entrada">Entrada</option>
+      <option value="saida">Saída</option>
+      <option value="investimento">Investimento</option>
+      <option value="comissao">Comissão</option>
+    </select>
+
+    <label>Descrição</label>
+    <input id="description" placeholder="Descrição do movimento">
+
+    <label>Categoria</label>
+    <input id="category" value="E-Mola">
+
+    <label>Valor em MT</label>
+    <input id="amount" type="number" min="0.01" step="0.01">
+
+    <button onclick="saveMovement()">Guardar movimento</button>
+    <p id="movementMessage" class="message"></p>
+  </div>
+
+  <div class="card">
+    <h2>Histórico de movimentos</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Registar dívida</h2>
+    <input id="person" placeholder="Nome da pessoa">
+    <input id="debtDescription" placeholder="Descrição da dívida">
+    <input id="debtAmount" type="number" min="0.01" step="0.01" placeholder="Valor em MT">
+    <button onclick="saveDebt()">Guardar dívida</button>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pessoa</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="debts"></tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<footer>
+  <div>Desenvolvido por <strong>Alfredo Belo</strong></div>
+  <div style="margin-top:6px">B&B Group Finance • V2.0</div>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let token = localStorage.getItem("bb_token");
+
+function money(value){
+  return Number(value || 0).toLocaleString("pt-MZ",{
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  }) + " MT";
+}
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+
+async function api(url, options = {}){
+  const response = await fetch(url,{
+    ...options,
+    headers:{
+      "Content-Type":"application/json",
+      ...(token ? {"Authorization":"Bearer "+token} : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const data = await response.json();
+
+  if(!response.ok){
+    throw new Error(data.error || "Erro no pedido.");
+  }
+
+  return data;
+}
+
+async function login(){
+  $("loginMessage").textContent = "A verificar acesso...";
+
+  try{
+    const response = await fetch("/api/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        username:$("username").value.trim().toLowerCase(),
+        password:$("password").value
+      })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error || "Falha no acesso.");
+    }
+
+    token = data.token;
+    localStorage.setItem("bb_token",token);
+
+    $("login").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("userName").textContent = data.user.name;
+
+    await loadDashboard();
+
+  }catch(error){
+    $("loginMessage").textContent = error.message;
+  }
+}
+
+function logout(){
+  localStorage.removeItem("bb_token");
+  token = null;
+  location.reload();
+}
+
+async function loadDashboard(){
+  try{
+    const data = await api("/api/dashboard");
+
+    $("entries").textContent = money(data.summary.entradas);
+    $("expenses").textContent = money(data.summary.saidas);
+    $("investments").textContent = money(data.summary.investimentos);
+    $("balance").textContent = money(data.summary.saldo);
+
+    $("history").innerHTML = data.recent.map(item => `
+      <tr>
+        <td>${escapeHTML(new Date(item.created_at).toLocaleDateString("pt-MZ"))}</td>
+        <td>${escapeHTML(item.type)}</td>
+        <td>${escapeHTML(item.description)}</td>
+        <td>${money(item.amount)}</td>
+      </tr>
+    `).join("");
+
+    $("debts").innerHTML = data.debts.map(item => `
+      <tr>
+        <td>${escapeHTML(item.person)}</td>
+        <td>${escapeHTML(item.description)}</td>
+        <td>${money(item.amount)}</td>
+        <td>${escapeHTML(item.status)}</td>
+      </tr>
+    `).join("");
+
+  }catch(error){
+    $("movementMessage").textContent =
+      "Não foi possível carregar os dados: " + error.message;
+  }
+}
+
+async function saveMovement(){
+  try{
+    const amount = Number($("amount").value);
+    const description = $("description").value.trim();
+
+    if(!description || !Number.isFinite(amount) || amount <= 0){
+      throw new Error("Preencha a descrição e um valor válido.");
+    }
+
+    await api("/api/movements",{
+      method:"POST",
+      body:JSON.stringify({
+        type:$("type").value,
+        description,
+        amount,
+        category:$("category").value.trim() || "Geral"
+      })
+    });
+
+    $("movementMessage").textContent = "Movimento guardado.";
+    $("description").value = "";
+    $("amount").value = "";
+
+    await loadDashboard();
+
+  }catch(error){
+    $("movementMessage").textContent = error.message;
+  }
+}
+
+async function saveDebt(){
+  try{
+    const person = $("person").value.trim();
+    const description = $("debtDescription").value.trim();
+    const amount = Number($("debtAmount").value);
+
+    if(!person || !description || !Number.isFinite(amount) || amount <= 0){
+      throw new Error("Preencha todos os campos da dívida.");
+    }
+
+    await api("/api/debts",{
+      method:"POST",
+      body:JSON.stringify({person,description,amount})
+    });
+
+    $("person").value = "";
+    $("debtDescription").value = "";
+    $("debtAmount").value = "";
+
+    await loadDashboard();
+
+  }catch(error){
+    alert(error.message);
+  }
+}
+
+async function restoreSession(){
+  if(!token) return;
+
+  try{
+    const user = await api("/api/me");
+
+    $("login").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("userName").textContent = user.name;
+
+    await loadDashboard();
+
+  }catch(error){
+    localStorage.removeItem("bb_token");
+    token = null;
+  }
+}
+
+restoreSession();
+</script>
+
+</body>
+</html>
